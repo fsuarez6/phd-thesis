@@ -1,0 +1,186 @@
+%% ----------------------------------------------------------------
+%% Thesis.tex -- MAIN FILE (the one that you compile with LaTeX)
+%% ---------------------------------------------------------------- 
+
+%% -----  PRINT VERSION ----------------------------------------------------------
+\documentclass[a4paper, 11pt, twoside, openright]{UPMthesis}
+\hypersetup{urlcolor=black, colorlinks=true, linkcolor={black},citecolor={black}}
+
+%~ %% -----  DIGITAL VERSION --------------------------------------------------------
+%~ \documentclass[a4paper, 11pt, oneside]{UPMthesis}
+%~ \hypersetup{urlcolor=black, colorlinks=true, linkcolor={blue!50!black},citecolor={blue!50!black}}
+%~ %% -------------------------------------------------------------------------------
+
+% Biblatex
+\usepackage[doi=false,isbn=false,url=false,maxcitenames=2,mincitenames=1, style=numeric-comp,defernumbers=true, 
+            maxbibnames=4,minbibnames=3,firstinits=true,sorting=none]{biblatex}  % Use new bibliography styles
+\AtEveryBibitem{\clearlist{language}} % clears language
+\AtEveryBibitem{\clearlist{address}} % clears address
+\addbibresource{references.bib}
+
+% Acronyms
+\usepackage[acronym,toc,nonumberlist,shortcuts]{glossaries}
+\input{./chapters/definitions}
+
+% Extra-packages
+\usepackage{afterpage}
+\usepackage[chapter]{algorithm}
+\usepackage{algorithmic}
+\usepackage{csquotes}
+\usepackage{fixmath}
+\usepackage{pdfpages}
+\usepackage{pgfplots}
+\usepackage{rotating}
+\usepackage{tabu}
+\usepackage{tikz}
+\usepackage{verbatim}
+\usepackage{blindtext}
+
+\graphicspath{{./figures/}}
+\DeclareGraphicsExtensions{.pdf,.jpg,.jpeg,.png}
+
+% Hesitation macros
+\newcommand{\code}[1]{\texttt{#1}}
+\newcommand{\sensor}[1]{\texttt{#1}}
+\newcommand{\finger}[1]{\texttt{#1}}
+\newcommand\myindent{\-\hspace{10mm}}
+\newcommand\tabindent{\hspace{1em}}
+\newcommand\mat[1]{\boldsymbol{#1}}
+\newcommand\vect[1]{\boldsymbol{#1}}
+\newcommand\mate[1]{\widetilde{\mat{#1}}}
+\newcommand\vecte[1]{\widetilde{\vect{#1}}}
+\newcommand{\norm}[1]{\left\lVert#1\right\rVert}
+\newcommand\asin[1]{\arcsin{\left(#1\right)}}
+\newcommand\atan[2]{\arctan{\left(\dfrac{#1}{#2}\right)}}
+\newcommand\Sin[1]{s_{#1}}
+\newcommand\Cos[1]{c_{#1}}
+\DeclareMathOperator{\sign}{sign}
+\newcommand\lnM[1]{\ln\left( #1\right) }
+\newcommand\vectorP[1]{\innervectorP(#1)}
+\def\innervectorP(#1,#2,#3){\left[#1,\,#2,\,#3 \right]}
+\newcommand\vectorT[1]{\innervectorT(#1)}
+\def\innervectorT(#1,#2,#3,#4,#5,#6){\left[#1,\,#2,\,#3,\,#4,\,#5,\,#6 \right]}
+\newcommand{\minus}{\scalebox{0.5}[1.0]{$-$}}
+\newcommand{\matrixspace}[0]{\vspace{0.75ex}}
+\newcommand{\figspace}[0]{\vspace{7.5mm}}
+\newcommand*\circled[1]{\tikz[baseline=(char.base)]{\node[shape=circle,draw,inner sep=1pt] (char) {#1};}}
+\newcommand{\bs}{\texttt{x}}
+\newcommand{\bt}{\texttt{o}\,}
+
+% Algorithmic modifications
+\makeatletter
+\renewcommand{\algorithmicrequire}{\textbf{Input:}}
+\renewcommand{\algorithmicensure}{\textbf{Output:}}
+\newcommand{\algorithmicbreak}{\textbf{break}}
+\newcommand{\BREAK}{\STATE \algorithmicbreak}
+\makeatother
+
+\hyphenation{%
+acce-le-ra-tion
+dis-po-si-ti-vos
+ge-ne-ra-li-za-tion
+me-thods 
+sig-ni-fi-can-tly
+ta-xo-no-mies
+te-le-ma-ni-pu-la-tion}
+
+% Helper lengths
+\newlength\figheight
+\newlength\figwidth
+\setlength\figheight{40mm} % Default one
+\newlength\handsize
+
+%% ----------------------------------------------------------------
+\begin{document}
+\frontmatter    % Begin Roman style (i, ii, iii, iv...) page numbering
+
+% Set up the Title Page
+\title    {Unnecessarily Complicated Research Title}
+\authors    {Francisco Su\'{a}rez Ruiz}
+\authordegree {Ingeniero Mecatr\'{o}nico} 
+\supervisor {D. Manuel Ferre P\'{e}rez}
+\superdegree{Doctor Ingeniero Industrial}
+% Jury
+\president    {Dr. Presidente}
+\secretary    {Dr. Secretario}
+\vocalA       {Dr. Vocal A}
+\vocalB       {Dr. Vocal B}
+\vocalC       {Dr. Vocal C}
+\surrogateA   {Dr. Suplente A}
+\surrogateB   {Dr. Suplente B}
+% Do not change this here, instead these must be set in the "UPMthesis.cls" file, please look through it instead
+\addresses  {\groupname\\\deptname\\\univname}
+\date       {2015}
+\subject    {}
+\keywords   {}
+
+\maketitle
+%% ----------------------------------------------------------------
+\setstretch{1.3}  % It is better to have smaller font and larger line spacing than the other way round
+% Define the page headers using the FancyHdr package and set up for one-sided printing
+\fancyhead{}  % Clears all page headers and footers
+\rhead{\thepage}  % Sets the right side header to show the page number
+\lhead{}  % Clears the left side page header
+\pagestyle{fancy}  % Finally, use the "fancy" page style to implement the FancyHdr headers
+%% ----------------------------------------------------------------
+\setstretch{1.3}
+%~ \linenumbers
+\input{./chapters/acknowledgements}
+\input{./chapters/abstract}
+
+%The page style headers have been "empty" all this time, now use the "fancy" headers as defined before to bring them back
+\pagestyle{fancy}
+\fancyhead[LE,RO]{\thepage}
+\fancyhead[RE]{\textit{\nouppercase{\leftmark}}}
+\fancyhead[LO]{\textit{\nouppercase{\rightmark}}}
+%% ----------------------------------------------------------------
+% Hack for that annoying extra blank page after table of contents
+{\begingroup
+\let\cleardoublepage\relax
+\let\clearpage\relax
+\tableofcontents
+\endgroup}
+\clearpage{\pagestyle{empty}\cleardoublepage}
+{\begingroup
+\let\cleardoublepage\relax
+\let\clearpage\relax
+\printglossaries
+\endgroup}
+
+\cleardoublepage
+%% ----------------------------------------------------------------
+% Begin the Dedication page
+\setstretch{1.3}  % Return the line spacing back to 1.3
+\pagestyle{empty}  % Page style needs to be empty for this page
+\dedicatory{To my family...}
+\addtocontents{toc}{\vspace{1em}}  % Add a gap in the Contents, for aesthetics
+%% ----------------------------------------------------------------
+\mainmatter   % Begin normal, numeric (1,2,3...) page numbering
+%The page style headers have been "empty" all this time, now use the "fancy" headers as defined before to bring them back
+\pagestyle{fancy}
+\fancyhead[LE,RO]{\thepage}
+\fancyhead[RE]{\textit{\nouppercase{\leftmark}}}
+\fancyhead[LO]{\textit{\nouppercase{\rightmark}}}
+
+%% ----------------------------------------------------------------
+% Chapters
+\input{./chapters/introduction}
+\input{./chapters/conclusions}
+
+%% ----------------------------------------------------------------
+% Now begin the Appendices, including them as separate files
+\addtocontents{toc}{\vspace{2em}} % Add a gap in the Contents, for aesthetics
+\appendix
+
+\input{./chapters/kinematics}
+
+\addtocontents{toc}{\vspace{1em}}  % Add a gap in the Contents, for aesthetics
+\listoffigures
+\listoftables
+
+\backmatter
+
+%% ----------------------------------------------------------------
+\printbibliography
+\end{document}  % The End
+%% ----------------------------------------------------------------

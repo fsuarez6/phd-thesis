@@ -1,0 +1,20 @@
+import os
+ 
+env = Environment()
+
+pdfs = env.PDF(Glob('*.tex'))  
+
+sk_files = Glob('*.sk')
+for sk in sk_files:
+  name, extension = os.path.splitext(sk.name)
+  tex_name = name + '_temp.tex'
+  tex = env.Command(tex_name, sk.name, 'sketch -T $SOURCE -o $TARGET')
+  pdf_tmp = env.PDF(tex_name)
+  pdf_name = name + '_temp.pdf'
+  sk_pdf = env.Command(name + '.pdf', pdf_name, 'pdfcrop $SOURCE $TARGET')  
+  # Clean up
+  env.Clean(tex, tex_name)
+  env.Clean(pdf_tmp, pdf_name)
+  env.NoClean(sk_pdf)
+    
+env.NoClean(pdfs)

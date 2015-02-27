@@ -1,0 +1,102 @@
+## Grips 6-DOF robot arm
+
+def blue<>
+input{lib/defaults.sk}
+input{lib/objects.sk}
+
+# Angles
+def J1 0
+def J2 -45
+def J3 0
+def J4 0
+def J5 0
+def J6 0
+# Distances
+def d1 3.53
+def d2 5.22
+def d3 2.61
+def d4 1.33
+def d5 1.5
+def d6 1.75
+
+def arrowarc 
+{
+  put {scale(0.5)}
+  {
+    sweep [style=thick]{215, rotate(1, [Z])} (1,0)
+    def p1 (1,0) then rotate(210, [Z])
+    def p2 (1,0) then rotate(210+30, [Z])
+    line [style=thick, style=->] (p1)(p2)
+  }
+}
+
+% The main drawing
+put {scale(1)}
+{   
+  
+  put {scale(1)}
+  {
+    # SA
+    put{translate([0,0,0]) * rotate(J1, [Z])}
+    {
+      put{scale([1.25,1.8,1.25]) * rotate(-90, [Z])}
+      {
+        {coordsys}
+        special |\path #1 node[left] {$z_0$}
+                       #2 node[below] {$x_0$}
+                       #3 node[right] {$y_0$};|(z)(x)(y)(o)
+      }
+      put{translate([0,0,0.75/2])}
+      {
+        put{scale([0.25,0.25,0.75])}{cylinder}
+        put {translate([0,0,0]) * rotate(135, [Z])}{arrowarc}
+        special|\node[right] at #1 {$q_1$};|(0.5,0,0)
+      }
+      line [style=dashed] (0,0,0)(0,0,d1)
+      # SE
+      put{translate([0,0,d1]) * rotate(90, [X]) * rotate(J2, [Z])}
+      {
+        put{scale([0.25,0.25,0.75])}{cylinder}
+        put {rotate(-45, [Z])}{arrowarc}
+        special|\node at #1 {$q_2$};|(-0.55,0.55,0)
+        line [style=dashed] (0,0,0)(0,d2,0)
+        
+        # EL
+        put{translate([0,d2,0]) * rotate(J3, [Z])}
+        {
+          put{scale([0.25,0.25,0.75])}{cylinder}
+          put {rotate(-45, [Z])}{arrowarc}
+          special|\node at #1 {$q_3$};|(-0.65,0.5,0)
+          
+          line [style=dashed] (0,0,0)(d3,0,0)
+          
+          # GRIP
+          put{translate([d3,0,0]) * rotate(90, [Y]) * rotate(90, [Z])}
+          {
+            put{scale([0.5,1,0.5])}{box}
+            put{translate([0,-0.35,0.5]) * scale([0.5,0.1,0.5])}{box}
+            put{translate([0,0.35,0.5]) * scale([0.5,0.1,0.5])}{box}
+            
+            put{translate([0,0,0.5]) * scale([1.25,2,1.25])}
+            {
+              {coordsys}
+              special |\path #1 node[left] {$z_4$}
+                             #2 node[right] {$x_4$}
+                             #3 node[below] {$y_4$};|(z)(x)(y)(o)
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+
+
+global 
+{ 
+  language tikz 
+  camera rotate(0, (1,0,0)) * view((1.5,2,1),(0,0,0),[0,0,1]) * rotate(110, (0,0,1))
+}
+
+

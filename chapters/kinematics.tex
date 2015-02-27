@@ -1,0 +1,151 @@
+\chapter{Kinematics Using Displacement Matrices}
+\label{ch:kinematics}
+
+The method proposed by \citeauthor{Denavit1955} \cite{Denavit1955,Paul1981} is the most popular to solve the \acf{fk} of a manipulator. It assigns a coordinate system to each link at the joint axis and then expresses the relationship between consecutive coordinate systems with homogeneous transformation matrices. All of the individual link transformation matrices may then be multiplied together to produce one transformation that relates the coordinate system at the end-effector to the base coordinate frame. The resulting matrix is a function of the joint displacement variables and the various parameters that describe the geometry of the manipulator.
+
+To simplify the derivation of each link transformation matrix, \citeauthor{Denavit1955} developed a set of rules for locating the various coordinate systems.
+Following these rules ensures that every transformation matrix has the same functional form and that the geometric parameters are well defined.
+
+When the manipulator has special kinematic configuration, these rules require extra ``dummy'' links to maintain the consistency between coordinate frames. Many alternatives exist to deal with such special configurations but they have been eclipsed by the popularity of the \ac{dh} method. Some examples are the use of dual numbers \cite{Veldkamp1976,McCarthy1986}, dual quaternions \cite{Perez2004} and product of exponentials \cite{Brockett1984}.
+
+In this work, the displacement matrices method \cite{Barrientos2012} is used. This method leads to the same result as the product of exponentials but avoids the complex selection of the \ac{dh} coordinate frames. 
+
+
+\section{Forward Kinematics}
+
+The displacement matrices method only requires to identify the axis of movement for each joint (rotation or translation depending on the joint type), a $(x,y,z)$ point over this axis and the transformation $\mat{T}_0$ that relates the coordinate system at the end-effector to the base coordinate frame when the robot is in the initial position ($q_i=0\;\forall{}\;i$)
+
+\begin{algorithm}[htbp]
+\caption{Forward kinematics using the displacement matrices method}
+\label{alg:fk}
+\begin{algorithmic}[1]
+  \REQUIRE $n > 0,\, \mat{T}_0,\, \vect{k}_i\;\forall{}\;i ,\, \vect{p}_i\;\forall{}\;i $
+  \ENSURE $\mat{T}_n :=$ end-effector transformation \\
+  \COMMENT{Vectors and transformations referred to the robot base frame}
+  \STATE $n \leftarrow$ number of DoF
+  \STATE $\mat{T}_0 \leftarrow$ transformation at home position $\left(q_i=0\;\forall{}\;i\right)$
+  \matrixspace
+  \STATE $\mat{I} \leftarrow \begin{bmatrix}
+    1   & 0   & 0  \\
+    0   & 1   & 0  \\
+    0   & 0   & 1
+    \end{bmatrix}$ 
+  \matrixspace
+  \STATE $\mat{T}_n \leftarrow \begin{bmatrix}
+    1   & 0   & 0  & 0  \\
+    0   & 1   & 0  & 0  \\
+    0   & 0   & 1  & 0  \\
+    0   & 0   & 0  & 1
+    \end{bmatrix}$
+  \matrixspace
+  \FOR{$i = 1$ \TO $n$}
+  \STATE $\vect{k}_i \leftarrow$ joint axis direction vector, $\mid\vect{k}_i\mid = 1$
+  \STATE $\vect{p}_i \leftarrow$ any point $\left(x,y,z\right)$ over the axis
+  \IF{joint $i$ is \textit{prismatic}} \label{line:fk_if_type}
+  \matrixspace
+  \STATE $\mat{D}_i \leftarrow \begin{bmatrix}
+    \mat{I} & \vect{k}_i\,^T\cdot q_i\\
+    0       & 1
+    \end{bmatrix}$
+  \matrixspace
+  \ELSIF{joint $i$ is \textit{revolute}}
+  \matrixspace
+  \STATE $\mbox{skew}\left(\vect{k}\right) \leftarrow \begin{bmatrix}
+    0     & -k_z  & k_y  \\
+    k_z   & 0     & -k_x  \\
+    -k_y  & k_x   & 0
+    \end{bmatrix}$
+  \matrixspace
+  \STATE $\mat{R}_i \leftarrow \mat{I}\cos{q_i}+\vect{k}_i\vect{k}_i^T\left(1-\cos{q_i}\right) + \mbox{skew}\left(\vect{k}_i\right)\,\sin{q_i}$
+  \matrixspace
+  \STATE $\mat{D}_i \leftarrow \begin{bmatrix}
+    \mat{R}_i   & \left(\mat{I} - \mat{R}_i\right)\vect{p}_i^T\\
+    0   & 1
+    \end{bmatrix}$
+  \matrixspace
+  \ENDIF \label{line:fk_endif_type}
+  \STATE $\mat{T}_n \leftarrow \mat{T}_n\mat{D}_i$
+  \ENDFOR
+  \STATE $\mat{T}_n \leftarrow \mat{T}_n\mat{T}_0$
+  \RETURN $\mat{T}_n$
+\end{algorithmic}
+\end{algorithm}
+
+\mref{alg:fk} shows that, similar to the \ac{dh} convention \cite{Denavit1955}, the displacement matrices method can be systematically implemented.
+
+Place the robot at its initial position ($q_i=0\;\forall{}\;i$), find the homogeneous transformation $\mat{T}_0$ that locates the robot's end-effector reference frame relative to the base frame.
+
+In the same position and for each \ac{dof} $q_i$ obtain the displacement matrix $\mat{D}_i$:
+\begin{itemize}
+\item Identify the joint axis direction vector $\vect{k}_i$ relative to the base frame.
+\item Select any point $\vect{p}_i$ over the joint axis.
+\item Calculate the displacement matrix $\mat{D}_i$ associated to the \ac{dof} depending on the type of joint: prismatic or revolute, see \mref{alg:fk} at lines \ref{line:fk_if_type}-\ref{line:fk_endif_type}.
+\item The FK is obtained as: $\mat{T}_n=\left(\prod_{i=0}^n\mat{D}_i\right)\cdot\mat{T}_0$
+\end{itemize}
+
+\section{Differential Kinematics}
+
+\begin{algorithm}
+\caption{Computation of the Geometric Jacobian using displacement matrices}
+\label{alg:jacobian}
+\begin{algorithmic}[1]
+  \REQUIRE $\mat{T}_n, \;\mat{D}_i\;\forall{}\;i, \;\vect{k}_i\;\forall{}\;i, \;\vect{p}_i\;\forall{}\;i$
+  \ENSURE $\mat{J} :=$ Geometric Jacobian\\
+  \STATE $n \leftarrow$ robot \acp{dof}
+
+  \STATE $\mat{R}_j \leftarrow \begin{bmatrix}
+      1   & 0   & 0  \\
+      0   & 1   & 0  \\
+      0   & 0   & 1
+    \end{bmatrix}$
+  \STATE $\mat{D}_j \leftarrow \begin{bmatrix}
+      1   & 0   & 0  & 0  \\
+      0   & 1   & 0  & 0  \\
+      0   & 0   & 1  & 0  \\
+      0   & 0   & 0  & 1    
+    \end{bmatrix}$
+  \STATE $^0\vect{p}_e \leftarrow \mat{T}_n\left[1:3,4\right]$
+  \COMMENT{End-effector position $\left(x,y,z\right)$}
+  \FOR{$i = 0$ \TO $n$}
+  \STATE $\mat{R}_j \leftarrow \mat{R}_j \cdot \mat{D}_i\left[1:3,1:3\right]$
+  \COMMENT{Rotation part of the displacement matrix}
+  \STATE $\vect{k}_j \leftarrow \mat{R}_j \cdot \vect{k}_i\,^T$
+  \STATE $\mat{D}_j \leftarrow \mat{D}_j \cdot \mat{D}_i$
+  \IF{joint $i$ is \textit{prismatic}}
+  \STATE $\mat{J}\left[:,i\right] \leftarrow \begin{bmatrix} \vect{k}_j \\  0 \end{bmatrix}$
+  \COMMENT{Populate the jacobian column by column}
+  \ELSIF{joint $i$ is \textit{revolute}}
+  \STATE $\begin{bmatrix} \vect{p}_j\\ 1 \end{bmatrix} \leftarrow \mat{D}_j \cdot \begin{bmatrix} \vect{p}_i\,^T\\ 1 \end{bmatrix}$
+  \STATE ${^j\vect{p}}_e \leftarrow {^0\vect{p}}_e - \vect{p}_j$
+  \STATE $\mat{J}\left[:,i\right] \leftarrow \begin{bmatrix} \vect{k}_j\times{^j\vect{p}}_e \\  \vect{k}_j \end{bmatrix}$
+  \COMMENT{Populate the jacobian column by column}
+  \ENDIF
+  \ENDFOR
+  \RETURN $\mat{J}$
+\end{algorithmic}
+\end{algorithm}
+
+Besides the \ac{fk} information, the differential kinematics is an important tool for robot control an analysis.
+\begin{definition}
+Differential kinematics is the relationship between motion in the joint space and the motion in the task space.
+\end{definition}
+
+This relationship is given by the Jacobian matrix $\mat{J}$, for instance for the velocity case,
+\begin{equation}
+  \begin{bmatrix} v_x \\ v_y \\ v_z \\ w_x \\ w_y \\ w_z\end{bmatrix} =
+  \mat{J}
+  \begin{bmatrix} q_1 \\ q_2 \\ \vdots \\ q_n\end{bmatrix}
+\end{equation}
+
+Additionally, forces in the task space can be transformed into torques in the joint space,
+
+\begin{equation}
+  \vect{\tau} = \mat{J}^T\,\vect{w} \Rightarrow
+  \begin{bmatrix} \tau_1 \\ \tau_2 \\ \vdots \\ \tau_n\end{bmatrix} = 
+  \mat{J}^T
+  \begin{bmatrix} \vect{f} \\ \vect{f}\times\vect{p} \end{bmatrix}
+\end{equation}
+
+where $\vect{\tau}$ is the torque command to the joints, $\vect{w}$ is the desired wrench (force and torque assembled screw) and $\mat{J}^T$ is the transpose of the robot Jacobian.
+
+\mref{alg:jacobian} shows how to obtain the columns of the Geometric Jacobian using the displacement matrices parameters.

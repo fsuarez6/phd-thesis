@@ -1,0 +1,4 @@
+# This folder accepts only images
+*.cfg
+*.tex
+*.pdf

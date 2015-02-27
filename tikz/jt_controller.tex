@@ -1,0 +1,38 @@
+\documentclass{standalone}
+\input{../tikz/plots_config.pgs}
+
+\begin{document}
+\begin{tikzpicture}[auto, node distance=2cm,>=latex']
+  % Blocks
+  \node [input] (xd) {};
+  \node [sum, right of=xd, node distance=1cm] (sum1) {};
+  \node [branch, right of=sum1, node distance=1cm] (xe) {};
+  \node [block, right of=sum1, node distance=2.5cm] (kp) {$\vect{k}_p$};
+  \node [block, above left=0.5cm and -0.5cm of kp] (dt) {$\dfrac{du}{dt}$};
+  \node [block, right of=dt, node distance=1.5cm] (kv) {$\vect{k}_v$};
+  \node [sum, right of=kp] (sum2) {};
+  \node [block, right of=sum2, node distance=2.5cm] (jt) {$\mat{J}^T$};
+  \node [block, below of= jt,node distance=1.5cm] (null) {$\vect{k}_0\left( \mat{I} - \mat{J}^T \mat{\bar{J}}^T \right)$};
+  \node [sum, right of=jt] (sum3) {};
+  \node [block, right of=sum3] (baxter) {Baxter};
+  \node [branch, right of=baxter, node distance=1.5cm] (x) {};
+  \node [output, right of=x, node distance=1cm] (x_out) {};
+  \node [below of=x, node distance=2.5cm, inner sep=0pt, minimum size=0pt] (x_feed) {};
+  \node [branch] (x_feed2) at (sum2|-x_feed) {};
+  % Lines
+  \draw [->] (xd) -- node[pos=0.85] {\plus} node [pos=0.15]{$\vect{x}_d$} (sum1);
+  \draw [->] (sum1) -- node[pos=0.25]  {$\vect{x}_e$} (kp);
+  \draw [->] (kp) -- node[pos=0.85] {\plus} (sum2);
+  \draw [->] (kv) -|  node[pos=0.85] {\plus} (sum2);
+  \draw [->] (sum2) --  node {$\vect{f}$} (jt);
+  \draw [->] (sum3) --  node {$\vect{\tau}$} (baxter);
+  \draw [->] (baxter) -- node[pos=0.7] {$\vect{x}$} (x_out);
+  \draw [-] (x) -- (x_feed);
+  \draw [->] (x_feed) -|  node[pos=0.85] {\minus} (sum1);
+  \draw [->] (xe) |-  (dt);
+  \draw [->] (dt) --  (kv);
+  \draw [->] (x_feed2) |-  (null);
+  \draw [->] (jt) --  node[pos=0.85] {\plus} (sum3);
+  \draw [->] (null) -|  node[pos=0.85] {\plus} (sum3);
+\end{tikzpicture}
+\end{document}
